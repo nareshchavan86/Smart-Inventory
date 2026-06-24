@@ -112,7 +112,7 @@ tailwind.config={theme:{extend:{fontFamily:{heading:['Space Grotesk','sans-serif
 .ab:hover{background:var(--s4);color:var(--tx)}.ab.dng:hover{background:rgba(239,68,68,.15);color:var(--err)}
 .star{color:var(--brd)}.star.filled{color:var(--acc)}
 .ssc{background:var(--s2);border:1px solid var(--brd);border-radius:12px;margin-bottom:20px;overflow:hidden}
-.ssch{padding:18px 22px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15px}
+.ssch{padding:18px 22px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s}
 .ssch:hover{background:var(--s3)}.ssch .si{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
 .ssch h3{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;flex:1}
 .ssch .chev{color:var(--tx3);transition:transform .2s}.ssch.open .chev{transform:rotate(180deg)}
@@ -147,6 +147,9 @@ tailwind.config={theme:{extend:{fontFamily:{heading:['Space Grotesk','sans-serif
 .spb-track{flex:1;height:6px;background:rgba(36,51,82,.6);border-radius:3px;overflow:hidden;min-width:50px;}
 .spb-fill{height:100%;border-radius:3px;transition:width .5s ease;}
 .spb-label{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;min-width:36px;text-align:right;}
+.no-data-msg{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;color:var(--tx3);text-align:center;}
+.no-data-msg i{font-size:32px;margin-bottom:12px;opacity:.5;}
+.no-data-msg p{font-size:13px;}
 @media(max-width:768px){.sidebar{position:fixed;left:0;top:0;transform:translateX(-100%);z-index:100}.sidebar.open{transform:translateX(0)}.mtog{display:flex!important}.ca{padding:16px}.fr{grid-template-columns:1fr}.drb{flex-direction:column;align-items:stretch}}
 .mtog{display:none!important}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
@@ -194,7 +197,7 @@ tailwind.config={theme:{extend:{fontFamily:{heading:['Space Grotesk','sans-serif
         <div class="kc"><div class="ki" style="background:rgba(34,197,94,.12);color:var(--ok);"><i class="fas fa-indian-rupee-sign"></i></div><div class="kv" id="kpi-v">0</div><div class="kl">Inventory Value</div></div>
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-7">
-        <div class="card lg:col-span-2"><div class="ch"><h3>Stock Movement (6 Months)</h3></div><div class="cb"><div class="cc" style="height:280px;"><canvas id="ch-mov"></canvas></div></div></div>
+        <div class="card lg:col-span-2"><div class="ch"><h3>Purchase Order Activity</h3></div><div class="cb"><div class="cc" style="height:280px;"><canvas id="ch-mov"></canvas></div></div></div>
         <div class="card"><div class="ch"><h3>Stock Status</h3></div><div class="cb"><div class="cc" style="height:280px;"><canvas id="ch-st"></canvas></div></div></div>
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -204,10 +207,7 @@ tailwind.config={theme:{extend:{fontFamily:{heading:['Space Grotesk','sans-serif
     </div>
     <!-- INVENTORY -->
     <div class="v" id="view-inventory">
-      <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
-        <div class="fp" id="cat-fil"></div>
-        <div class="flex gap-3"><div style="position:relative;"><i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:13px;"></i><input type="text" id="inv-s" placeholder="Search..." style="padding:8px 14px 8px 34px;background:var(--s3);border:1px solid var(--brd);border-radius:8px;color:var(--tx);font-size:13px;width:200px;outline:none;" aria-label="Search inventory"></div><button class="btn btn-p" onclick="openProdMod()"><i class="fas fa-plus"></i> Add Product</button></div>
-      </div>
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-5"><div class="fp" id="cat-fil"></div><div class="flex gap-3"><div style="position:relative;"><i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:13px;"></i><input type="text" id="inv-s" placeholder="Search..." style="padding:8px 14px 8px 34px;background:var(--s3);border:1px solid var(--brd);border-radius:8px;color:var(--tx);font-size:13px;width:200px;outline:none;" aria-label="Search inventory"></div><button class="btn btn-p" onclick="openProdMod()"><i class="fas fa-plus"></i> Add Product</button></div></div>
       <div class="card"><div style="overflow-x:auto;"><table class="dt"><thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>Quantity</th><th>Reorder Level</th><th>Unit Price</th><th>Supplier</th><th>Status</th><th>Actions</th></tr></thead><tbody id="inv-tb"></tbody></table></div></div>
     </div>
     <!-- PURCHASE ORDERS -->
@@ -222,58 +222,37 @@ tailwind.config={theme:{extend:{fontFamily:{heading:['Space Grotesk','sans-serif
     </div>
     <!-- ALERTS -->
     <div class="v" id="view-alerts">
-      <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
-        <div class="fp" id="al-fil"><button class="fpil active" data-filter="all">All</button><button class="fpil" data-filter="critical">Critical</button><button class="fpil" data-filter="warning">Warning</button><button class="fpil" data-filter="resolved">Resolved</button></div>
-        <button class="btn btn-s" onclick="sendAll()"><i class="fas fa-envelope"></i> Send All Notifications</button>
-      </div>
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-5"><div class="fp" id="al-fil"><button class="fpil active" data-filter="all">All</button><button class="fpil" data-filter="critical">Critical</button><button class="fpil" data-filter="warning">Warning</button><button class="fpil" data-filter="resolved">Resolved</button></div><button class="btn btn-s" onclick="sendAll()"><i class="fas fa-envelope"></i> Send All Notifications</button></div>
       <div class="flex flex-col gap-3" id="al-list"></div>
     </div>
     <!-- USERS -->
     <div class="v" id="view-users">
-      <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-          <div style="position:relative;"><i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:13px;"></i><input type="text" id="usr-s" placeholder="Search email..." style="padding:8px 14px 8px 34px;background:var(--s3);border:1px solid var(--brd);border-radius:8px;color:var(--tx);font-size:13px;width:240px;outline:none;" oninput="rUsr()"></div>
-          <select id="usr-rf" style="padding:8px 12px;background:var(--s3);border:1px solid var(--brd);border-radius:8px;color:var(--tx);font-size:13px;cursor:pointer;outline:none;" onchange="rUsr()"><option value="all">All Roles</option><option value="ADMIN">ADMIN</option><option value="USER">USER</option><option value="VIEWER">VIEWER</option></select>
-        </div>
-        <button class="btn btn-p" onclick="openAddUserMod()"><i class="fas fa-user-plus"></i> Add User</button>
-      </div>
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-5"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><div style="position:relative;"><i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:13px;"></i><input type="text" id="usr-s" placeholder="Search email..." style="padding:8px 14px 8px 34px;background:var(--s3);border:1px solid var(--brd);border-radius:8px;color:var(--tx);font-size:13px;width:240px;outline:none;" oninput="rUsr()"></div><select id="usr-rf" style="padding:8px 12px;background:var(--s3);border:1px solid var(--brd);border-radius:8px;color:var(--tx);font-size:13px;cursor:pointer;outline:none;" onchange="rUsr()"><option value="all">All Roles</option><option value="ADMIN">ADMIN</option><option value="USER">USER</option><option value="VIEWER">VIEWER</option></select></div><button class="btn btn-p" onclick="openAddUserMod()"><i class="fas fa-user-plus"></i> Add User</button></div>
       <div class="card"><div style="overflow-x:auto;"><table class="dt"><thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Added On</th><th>Last Login</th><th>Action</th></tr></thead><tbody id="usr-tb"></tbody></table></div></div>
     </div>
     <!-- ANALYTICS -->
     <div class="v" id="view-analytics">
       <div class="drb">
-        <div style="display:flex;align-items:center;gap:8px;"><label>Month</label><select id="an-m" onchange="onAF()"><option value="all">All Months</option><option value="2024-08">August 2024</option><option value="2024-09">September 2024</option><option value="2024-10">October 2024</option><option value="2024-11">November 2024</option><option value="2024-12">December 2024</option><option value="2025-01" selected>January 2025</option></select></div>
-        <div style="display:flex;align-items:center;gap:8px;"><label>Start Date</label><input type="date" id="an-s" value="2025-01-01" onchange="onAF()"></div>
+        <div style="display:flex;align-items:center;gap:8px;"><label>Month</label><select id="an-m" onchange="onAF()"><option value="all">All Months</option></select></div>
+        <div style="display:flex;align-items:center;gap:8px;"><label>Start Date</label><input type="date" id="an-s" onchange="onAF()"></div>
         <span class="dsep">to</span>
-        <div style="display:flex;align-items:center;gap:8px;"><label>End Date</label><input type="date" id="an-e" value="2025-01-31" onchange="onAF()"></div>
+        <div style="display:flex;align-items:center;gap:8px;"><label>End Date</label><input type="date" id="an-e" onchange="onAF()"></div>
         <button class="btn btn-s btn-sm" onclick="resetAF()" style="margin-left:auto;"><i class="fas fa-rotate-left"></i> Reset</button>
         <button class="btn btn-p btn-sm" onclick="onAF()"><i class="fas fa-filter"></i> Apply</button>
       </div>
-      <!-- Row 1: Movement KPIs -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-7">
         <div class="kc"><div class="ki" style="background:rgba(34,197,94,.12);color:var(--ok);"><i class="fas fa-arrow-right-to-bracket"></i></div><div class="kv" id="an-in">0</div><div class="kl">Units Received (Selected Period)</div></div>
-        <div class="kc"><div class="ki" style="background:rgba(245,158,11,.12);color:var(--acc);"><i class="fas fa-arrow-right-from-bracket"></i></div><div class="kv" id="an-out">0</div><div class="kl">Units Dispatched (Selected Period)</div></div>
+        <div class="kc"><div class="ki" style="background:rgba(245,158,11,.12);color:var(--acc);"><i class="fas fa-arrow-right-from-bracket"></i></div><div class="kv" id="an-out">0</div><div class="kl">Units Ordered (Selected Period)</div></div>
         <div class="kc"><div class="ki" style="background:rgba(20,184,166,.12);color:var(--inf);"><i class="fas fa-rotate"></i></div><div class="kv" id="an-to">0</div><div class="kl">Inventory Turnover Ratio</div></div>
       </div>
-      <!-- Row 2: Spend + Supplier -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-7">
-        <div class="card"><div class="ch"><h3>Monthly Procurement Spend</h3></div><div class="cb"><div class="cc" style="height:280px;"><canvas id="ch-sp"></canvas></div></div></div>
-        <div class="card"><div class="ch"><h3>Supplier Performance</h3></div><div class="cb"><div class="cc" style="height:280px;"><canvas id="ch-sperf"></canvas></div></div></div>
-      </div>
-      <!-- Row 3: Data Summary Count Cards -->
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-7" id="an-count-cards"></div>
-      <!-- Row 4: Product Stock Table -->
-      <div class="card mb-7">
-        <div class="ch"><h3>Product Stock Levels</h3><span style="font-size:12px;color:var(--tx3);" id="an-stock-cnt"></span></div>
-        <div class="cb" style="padding:0;overflow-x:auto;">
-          <table class="dt" id="an-stock-tbl"><thead><tr><th style="min-width:180px;">Product</th><th>Category</th><th>Stock Qty</th><th style="min-width:130px;">Stock Level</th><th>Reorder Level</th><th>Unit Price</th><th>Stock Value</th><th>Status</th></tr></thead><tbody id="an-stock-tb"></tbody></table>
-        </div>
-      </div>
-      <!-- Row 5: Category Value + Top Products -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div class="card mb-7"><div class="ch"><h3>Monthly Procurement Spend</h3><span style="font-size:12px;color:var(--tx3);" id="an-spend-cnt"></span></div><div class="cb"><div class="cc" style="height:280px;"><canvas id="ch-sp"></canvas></div></div></div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-7">
+        <div class="card"><div class="ch"><h3>Supplier Performance</h3></div><div class="cb"><div class="cc" style="height:280px;"><canvas id="ch-sperf"></canvas></div></div></div>
         <div class="card"><div class="ch"><h3>Category-Wise Inventory Value</h3></div><div class="cb"><div class="cc" style="height:280px;"><canvas id="ch-cv"></canvas></div></div></div>
-        <div class="card"><div class="ch"><h3>Top Products by Stock Value</h3></div><div class="cb"><div class="cc" style="height:280px;"><canvas id="ch-tv"></canvas></div></div></div>
       </div>
+      <div class="card mb-7"><div class="ch"><h3>Product Stock Levels</h3><span style="font-size:12px;color:var(--tx3);" id="an-stock-cnt"></span></div><div class="cb" style="padding:0;overflow-x:auto;"><table class="dt"><thead><tr><th style="min-width:180px;">Product</th><th>Category</th><th>Stock Qty</th><th style="min-width:130px;">Stock Level</th><th>Reorder Level</th><th>Unit Price</th><th>Stock Value</th><th>Status</th></tr></thead><tbody id="an-stock-tb"></tbody></table></div></div>
+      <div class="card"><div class="ch"><h3>Top Products by Stock Value</h3></div><div class="cb"><div class="cc" style="height:260px;"><canvas id="ch-tv"></canvas></div></div></div>
     </div>
     <!-- SETTINGS -->
     <div class="v" id="view-settings">
@@ -283,8 +262,8 @@ tailwind.config={theme:{extend:{fontFamily:{heading:['Space Grotesk','sans-serif
         <div id="sync-log" style="background:var(--s3);border-radius:8px;padding:14px;max-height:160px;overflow-y:auto;font-size:12px;font-family:'Courier New',monospace;color:var(--tx2);line-height:1.8;"><div style="color:var(--tx3);">-- Sync Log --</div></div>
       </div></div>
       <div class="ssc"><div class="ssch" onclick="togSS(this)"><i class="fas fa-user-circle si" style="background:rgba(245,158,11,.12);color:var(--acc);"></i><h3>Profile Settings</h3><i class="fas fa-chevron-down chev"></i></div><div class="sscb"><div class="fr" style="margin-bottom:14px;"><div class="fg" style="margin-bottom:0;"><label>Full Name</label><input type="text" value="Arjun Kumar"></div><div class="fg" style="margin-bottom:0;"><label>Email</label><input type="email" value="arjun.kumar@inventrack.com"></div></div><div style="display:flex;justify-content:flex-end;gap:10px;"><button class="btn btn-s" onclick="showToast('Discarded','info')">Discard</button><button class="btn btn-p" onclick="showToast('Saved','success')">Save</button></div></div></div>
-      <div class="ssc"><div class="ssch" onclick="togSS(this)"><i class="fas fa-bell si" style="background:rgba(20,184,166,.12);color:var(--inf);"></i><h3>Notification Preferences</h3><i class="fas fa-chevron-down chev"></i></div><div class="sscb"><div class="sr"><div><div class="srl">Low Stock Email Alerts</div><div class="srd">When product falls below reorder level</div></div><div class="tgl on" onclick="this.classList.toggle('on');showToast('Updated','success')"></div></div><div class="sr"><div><div class="srl">Auto-Sync to Google Sheets</div><div class="srd">Push changes automatically</div></div><div class="tgl on" id="tgl-autosync" onclick="this.classList.toggle('on');"></div></div></div></div>
-      <div class="ssc"><div class="ssch" onclick="togSS(this)"><i class="fas fa-database si" style="background:rgba(168,85,247,.12);color:#a855f7;"></i><h3>Data Management</h3><i class="fas fa-chevron-down chev"></i></div><div class="sscb"><div class="sr"><div><div class="srl">Export All Data</div><div class="srd">Download as CSV</div></div><button class="btn btn-s btn-sm" onclick="exportCSV()"><i class="fas fa-download"></i> Export</button></div><div class="sr"><div><div class="srl">Clear All Alerts</div><div class="srd">Mark all as resolved</div></div><button class="btn btn-d btn-sm" onclick="alerts.forEach(a=>a.status='resolved');updateBadges();showToast('Cleared','success');"><i class="fas fa-broom"></i> Clear</button></div><div class="sr"><div><div class="srl">Reset Demo Data</div><div class="srd">Restore original state</div></div><button class="btn btn-d btn-sm" onclick="location.reload()"><i class="fas fa-rotate-left"></i> Reset</button></div></div></div>
+      <div class="ssc"><div class="ssch" onclick="togSS(this)"><i class="fas fa-bell si" style="background:rgba(20,184,166,.12);color:var(--inf);"></i><h3>Notification Preferences</h3><i class="fas fa-chevron-down chev"></i></div><div class="sscb"><div class="sr"><div><div class="srl">Auto-Sync to Google Sheets</div><div class="srd">Push changes automatically</div></div><div class="tgl on" id="tgl-autosync" onclick="this.classList.toggle('on');"></div></div></div></div>
+      <div class="ssc"><div class="ssch" onclick="togSS(this)"><i class="fas fa-database si" style="background:rgba(168,85,247,.12);color:#a855f7;"></i><h3>Data Management</h3><i class="fas fa-chevron-down chev"></i></div><div class="sscb"><div class="sr"><div><div class="srl">Export All Data</div><div class="srd">Download as CSV</div></div><button class="btn btn-s btn-sm" onclick="exportCSV()"><i class="fas fa-download"></i> Export</button></div><div class="sr"><div><div class="srl">Reset Demo Data</div><div class="srd">Restore original state</div></div><button class="btn btn-d btn-sm" onclick="location.reload()"><i class="fas fa-rotate-left"></i> Reset</button></div></div></div>
     </div>
   </div>
 </div>
@@ -296,7 +275,6 @@ let products=[{id:1,name:'Wireless Mouse',sku:'ELC-001',category:'Electronics',q
 let suppliers=[{id:1,name:'TechParts Global',contact:'Rajesh Mehta',email:'rajesh@techparts.com',phone:'+91 98765 43210',category:'Electronics',rating:4.5,totalOrders:47,onTimeDelivery:92,status:'Active',color:'#f59e0b'},{id:2,name:'OfficePro Supplies',contact:'Priya Sharma',email:'priya@officepro.in',phone:'+91 87654 32109',category:'Office Supplies',rating:4.2,totalOrders:38,onTimeDelivery:88,status:'Active',color:'#14b8a6'},{id:3,name:'MetalWorks Inc.',contact:'Vikram Singh',email:'vikram@metalworks.co',phone:'+91 76543 21098',category:'Raw Materials',rating:4.7,totalOrders:52,onTimeDelivery:96,status:'Active',color:'#ef4444'},{id:4,name:'PackRight Solutions',contact:'Anita Desai',email:'anita@packright.com',phone:'+91 65432 10987',category:'Packaging',rating:3.8,totalOrders:29,onTimeDelivery:82,status:'Active',color:'#8b5cf6'},{id:5,name:'SafeGuard Equipment',contact:'Suresh Patil',email:'suresh@safeguard.in',phone:'+91 54321 09876',category:'Safety Equipment',rating:4.4,totalOrders:33,onTimeDelivery:90,status:'Active',color:'#22c55e'},{id:6,name:'CleanCo Industries',contact:'Meera Nair',email:'meera@cleanco.com',phone:'+91 43210 98765',category:'Cleaning Supplies',rating:3.9,totalOrders:21,onTimeDelivery:85,status:'Active',color:'#06b6d4'}];
 let purchaseOrders=[{id:1,poNumber:'PO-2025-001',supplier:'TechParts Global',items:[{product:'USB-C Hub 7-Port',qty:50,price:1850}],totalAmount:92500,status:'Pending',date:'2025-01-12',expectedDelivery:'2025-01-22'},{id:2,poNumber:'PO-2025-002',supplier:'OfficePro Supplies',items:[{product:'Ballpoint Pens (Box of 50)',qty:30,price:450},{product:'Printer Toner Cartridge',qty:20,price:2800}],totalAmount:69500,status:'Approved',date:'2025-01-11',expectedDelivery:'2025-01-20'},{id:3,poNumber:'PO-2025-003',supplier:'MetalWorks Inc.',items:[{product:'Copper Wire (100m roll)',qty:25,price:3400}],totalAmount:85000,status:'Shipped',date:'2025-01-09',expectedDelivery:'2025-01-17'},{id:4,poNumber:'PO-2025-004',supplier:'PackRight Solutions',items:[{product:'Bubble Wrap (50m roll)',qty:40,price:420},{product:'Shipping Labels (Roll 500)',qty:20,price:650}],totalAmount:29800,status:'Pending',date:'2025-01-13',expectedDelivery:'2025-01-23'},{id:5,poNumber:'PO-2024-048',supplier:'SafeGuard Equipment',items:[{product:'Nitrile Gloves (Box 100)',qty:30,price:980}],totalAmount:29400,status:'Delivered',date:'2024-12-28',expectedDelivery:'2025-01-05'},{id:6,poNumber:'PO-2024-047',supplier:'TechParts Global',items:[{product:'Wireless Mouse',qty:100,price:799}],totalAmount:79900,status:'Delivered',date:'2024-12-20',expectedDelivery:'2024-12-30'}];
 let users=[{id:1,email:'arjun.kumar@inventrack.com',name:'Arjun Kumar',role:'ADMIN',addedOn:'2024-06-15',lastLogin:'2025-01-13 09:32'},{id:2,email:'priya.sharma@inventrack.com',name:'Priya Sharma',role:'ADMIN',addedOn:'2024-07-01',lastLogin:'2025-01-13 08:15'},{id:3,email:'naresh.chavan@inventrack.com',name:'Naresh Chavan',role:'USER',addedOn:'2024-08-12',lastLogin:'2025-01-12 17:45'},{id:4,email:'suresh.patil@inventrack.com',name:'Suresh Patil',role:'USER',addedOn:'2024-08-20',lastLogin:'2025-01-11 14:20'},{id:5,email:'meera.nair@inventrack.com',name:'Meera Nair',role:'USER',addedOn:'2024-09-05',lastLogin:'2025-01-13 10:05'},{id:6,email:'anita.desai@inventrack.com',name:'Anita Desai',role:'VIEWER',addedOn:'2024-10-02',lastLogin:'2025-01-08 11:45'},{id:7,email:'rajesh.mehta@inventrack.com',name:'Rajesh Mehta',role:'VIEWER',addedOn:'2024-10-15',lastLogin:'2025-01-09 09:00'}];
-const monthlyData={'2024-02':{inbound:310,outbound:290,spend:195000},'2024-03':{inbound:370,outbound:340,spend:245000},'2024-04':{inbound:290,outbound:310,spend:210000},'2024-05':{inbound:400,outbound:370,spend:275000},'2024-06':{inbound:350,outbound:330,spend:255000},'2024-07':{inbound:380,outbound:395,spend:268000},'2024-08':{inbound:420,outbound:350,spend:285000},'2024-09':{inbound:380,outbound:410,spend:320000},'2024-10':{inbound:510,outbound:380,spend:410000},'2024-11':{inbound:460,outbound:440,spend:365000},'2024-12':{inbound:530,outbound:400,spend:490000},'2025-01':{inbound:480,outbound:450,spend:291200}};
 let alerts=[];let nPID=17,nPOID=7,nSID=7,nUID=8;
 let cView='dashboard',catF='all',poF='all',alF='all';let charts={};
 
@@ -317,9 +295,9 @@ function r2po(r){return r.map(r=>({id:parseInt(r[0]),poNumber:r[1],supplier:r[2]
 function r2u(r){return r.map(r=>({id:parseInt(r[0]),email:r[1],name:r[2],role:r[3],addedOn:r[4],lastLogin:r[5]}));}
 function r2a(r){return r.map(r=>({id:parseInt(r[0]),productName:r[1],sku:r[2],currentStock:parseInt(r[3]),reorderLevel:parseInt(r[4]),severity:r[5],supplier:r[6],date:r[7],status:r[8]}));}
 async function gsF(action,data={}){if(!gsUrl)return null;try{const r=await fetch(gsUrl,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action,...data}),redirect:'follow'});const t=await r.text();let j;try{j=JSON.parse(t);}catch(e){const m=t.match(/\{[\s\S]*\}/);if(m)j=JSON.parse(m[0]);else throw new Error('Invalid response');}return j;}catch(e){syncLog('Error: '+e.message,'error');return null;}}
-async function connectGS(){const url=document.getElementById('gs-url').value.trim();if(!url){showToast('Enter URL','error');return;}gsUrl=url;syncLog('Connecting...','info');setSyncSt('syncing');const res=await gsF('readAll');if(res&&res.success){gsConnected=true;if(res.Products){products=r2p(res.Products);nPID=Math.max(...products.map(p=>p.id),0)+1;}if(res.Suppliers){suppliers=r2s(res.Suppliers);nSID=Math.max(...suppliers.map(s=>s.id),0)+1;}if(res.PurchaseOrders){purchaseOrders=r2po(res.PurchaseOrders);nPOID=Math.max(...purchaseOrders.map(p=>p.id),0)+1;}if(res.Users){users=r2u(res.Users);nUID=Math.max(...users.map(u=>u.id),0)+1;}if(res.Alerts)alerts=r2a(res.Alerts);else genAlerts();updateBadges();setSyncSt('connected');syncLog('Connected! Data loaded from Sheets.','success');showToast('Connected to Google Sheets','success');nav(cView);}else{gsConnected=false;setSyncSt('error');syncLog('Connection failed.','error');showToast('Connection failed','error');}}
+async function connectGS(){const url=document.getElementById('gs-url').value.trim();if(!url){showToast('Enter URL','error');return;}gsUrl=url;syncLog('Connecting...','info');setSyncSt('syncing');const res=await gsF('readAll');if(res&&res.success){gsConnected=true;if(res.Products){products=r2p(res.Products);nPID=Math.max(...products.map(p=>p.id),0)+1;}if(res.Suppliers){suppliers=r2s(res.Suppliers);nSID=Math.max(...suppliers.map(s=>s.id),0)+1;}if(res.PurchaseOrders){purchaseOrders=r2po(res.PurchaseOrders);nPOID=Math.max(...purchaseOrders.map(p=>p.id),0)+1;}if(res.Users){users=r2u(res.Users);nUID=Math.max(...users.map(u=>u.id),0)+1;}if(res.Alerts)alerts=r2a(res.Alerts);else genAlerts();updateBadges();setSyncSt('connected');syncLog('Connected! Data loaded from Google Sheets.','success');showToast('Connected to Google Sheets','success');initDateRange();nav(cView);}else{gsConnected=false;setSyncSt('error');syncLog('Connection failed.','error');showToast('Connection failed','error');}}
 function disconnectGS(){gsConnected=false;gsUrl='';document.getElementById('gs-url').value='';setSyncSt('off');syncLog('Disconnected.','warn');showToast('Disconnected','info');}
-async function syncNow(){if(!gsConnected||!gsUrl){showToast('Not connected','warning');return;}if(gsSyncing)return;gsSyncing=true;setSyncSt('syncing');syncLog('Full sync...','info');const payload={Products:p2r(),Suppliers:s2r(),PurchaseOrders:po2r(),Users:u2r(),Alerts:a2r()};const res=await gsF('writeAll',payload);if(res&&res.success){setSyncSt('connected');syncLog('Full sync done.','success');showToast('All data synced','success');}else{setSyncSt('error');syncLog('Sync failed!','error');showToast('Sync failed','error');}gsSyncing=false;}
+async function syncNow(){if(!gsConnected||!gsUrl){showToast('Not connected','warning');return;}if(gsSyncing)return;gsSyncing=true;setSyncSt('syncing');syncLog('Full sync...','info');const payload={Products:p2r(),Suppliers:s2r(),PurchaseOrders:po2r(),Users:u2r(),Alerts:a2r()};const res=await gsF('writeAll',payload);if(res&&res.success){setSyncSt('connected');syncLog('Full sync done.','success');showToast('All data synced','success');initDateRange();}else{setSyncSt('error');syncLog('Sync failed!','error');showToast('Sync failed','error');}gsSyncing=false;}
 async function autoSync(sh){if(!gsConnected||!isAS()||gsSyncing)return;gsSyncing=true;setSyncSt('syncing');let rows;if(sh==='Products')rows=p2r();else if(sh==='Suppliers')rows=s2r();else if(sh==='PurchaseOrders')rows=po2r();else if(sh==='Users')rows=u2r();else if(sh==='Alerts')rows=a2r();if(!rows){gsSyncing=false;setSyncSt('connected');return;}const res=await gsF('writeSheet',{sheet:sh,headers:sH[sh],rows});if(res&&res.success){setSyncSt('connected');syncLog(`Auto-synced ${sh} (${rows.length} rows)`,'success');}else{setSyncSt('error');syncLog(`Auto-sync failed: ${sh}`,'error');}gsSyncing=false;}
 
 // ==================== UTILITY ====================
@@ -330,6 +308,64 @@ function genAlerts(){alerts=products.filter(p=>aSev(p)).map(p=>({id:p.id,product
 function updateBadges(){const o=alerts.filter(a=>a.status==='open').length;document.getElementById('acb').textContent=o;document.getElementById('nbdg').textContent=o;document.getElementById('nbdg').style.display=o>0?'flex':'none';}
 function showToast(m,t='info'){const ic={success:'fa-check-circle',error:'fa-times-circle',info:'fa-info-circle',warning:'fa-exclamation-circle'};const c=document.getElementById('tc');const el=document.createElement('div');el.className=`toast t-${t[0]}`;el.innerHTML=`<i class="fas ${ic[t]}"></i><span>${m}</span>`;c.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),300);},3500);}
 function animV(id,tgt){const el=document.getElementById(id);let c=0;const s=Math.max(1,Math.ceil(tgt/20));const iv=setInterval(()=>{c+=s;if(c>=tgt){c=tgt;clearInterval(iv);}el.textContent=c;},30);}
+
+// ==================== PO ANALYTICS HELPERS ====================
+// Group purchase orders by month - ALL analytics come from actual PO data
+function getPOByMonth(poList){
+  if(!poList) poList = purchaseOrders;
+  const months = {};
+  poList.forEach(po => {
+    if(!po.date || po.date === 'TBD') return;
+    const ym = po.date.substring(0, 7); // "2025-01"
+    if(!months[ym]) months[ym] = {spend:0, ordered:0, received:0, count:0};
+    months[ym].spend += po.totalAmount || 0;
+    months[ym].count += 1;
+    po.items.forEach(item => {
+      months[ym].ordered += item.qty || 0;
+      if(po.status === 'Delivered') months[ym].received += item.qty || 0;
+    });
+  });
+  return months;
+}
+
+function getMonthLabel(ym){
+  const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const parts = ym.split('-');
+  return mNames[parseInt(parts[1])-1] + ' ' + parts[0].slice(2);
+}
+
+function getFilteredPOs(startStr, endStr){
+  if(!startStr || !endStr) return purchaseOrders;
+  const s = new Date(startStr), e = new Date(endStr);
+  e.setHours(23,59,59,999);
+  return purchaseOrders.filter(po => {
+    if(!po.date || po.date === 'TBD') return false;
+    const d = new Date(po.date);
+    return d >= s && d <= e;
+  });
+}
+
+// Set date range defaults from actual PO data
+function initDateRange(){
+  const allMonths = Object.keys(getPOByMonth()).sort();
+  if(allMonths.length > 0){
+    const first = allMonths[0], last = allMonths[allMonths.length-1];
+    const [fy,fm] = first.split('-').map(Number);
+    const [ly,lm] = last.split('-').map(Number);
+    const fLastDay = new Date(fy, fm, 0).getDate();
+    const lLastDay = new Date(ly, lm, 0).getDate();
+    document.getElementById('an-s').value = `${fy}-${String(fm).padStart(2,'0')}-01`;
+    document.getElementById('an-e').value = `${ly}-${String(lm).padStart(2,'0')}-${lLastDay}`;
+    // Populate month dropdown from actual data
+    const sel = document.getElementById('an-m');
+    const currentVal = sel.value;
+    sel.innerHTML = '<option value="all">All Months</option>' + allMonths.map(ym => `<option value="${ym}" ${currentVal===ym?'selected':''}>${getMonthLabel(ym)}</option>`).join('');
+  } else {
+    document.getElementById('an-s').value = '';
+    document.getElementById('an-e').value = '';
+    document.getElementById('an-m').innerHTML = '<option value="all">No Data</option>';
+  }
+}
 
 // ==================== NAVIGATION ====================
 function nav(v){cView=v;document.querySelectorAll('.v').forEach(e=>e.classList.remove('active'));document.getElementById('view-'+v).classList.add('active');document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));const ni=document.querySelector(`.ni[data-view="${v}"]`);if(ni)ni.classList.add('active');const t={dashboard:'Dashboard',inventory:'Inventory Management','purchase-orders':'Purchase Orders',suppliers:'Supplier Management',alerts:'Stock Alerts',analytics:'Analytics & Reports',settings:'Settings',users:'User Management'};document.getElementById('ptitle').textContent=t[v]||'Dashboard';document.getElementById('sidebar').classList.remove('open');if(v==='dashboard')rDash();else if(v==='inventory')rInv();else if(v==='purchase-orders')rPO();else if(v==='suppliers')rSup();else if(v==='alerts')rAl();else if(v==='analytics')rAn();else if(v==='users')rUsr();}
@@ -348,7 +384,17 @@ function rDash(){
 function rDashCharts(){
   Object.keys(charts).forEach(k=>{if(charts[k])charts[k].destroy();});
   const cf={family:'DM Sans'},gc='rgba(36,51,82,.5)',tc='#5a6b80';
-  charts.mov=new Chart(document.getElementById('ch-mov'),{type:'line',data:{labels:['Aug','Sep','Oct','Nov','Dec','Jan'],datasets:[{label:'Inbound',data:[420,380,510,460,530,480],borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.08)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#22c55e',borderWidth:2},{label:'Outbound',data:[350,410,380,440,400,450],borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.08)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#f59e0b',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:cf,usePointStyle:true,pointStyle:'circle',padding:20}}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:cf}},y:{grid:{color:gc},ticks:{color:tc,font:cf}}}}});
+
+  // PO-based movement chart for dashboard
+  const allMonths = getPOByMonth();
+  const sortedKeys = Object.keys(allMonths).sort();
+  const labels = sortedKeys.map(getMonthLabel);
+  // Show last 6 months (or all if fewer)
+  const last6 = sortedKeys.slice(-6);
+  const dashLabels = last6.map(getMonthLabel);
+
+  charts.mov=new Chart(document.getElementById('ch-mov'),{type:'line',data:{labels:dashLabels,datasets:[{label:'Units Ordered',data:last6.map(k=>allMonths[k].ordered),borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.08)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#f59e0b',borderWidth:2},{label:'Units Received',data:last6.map(k=>allMonths[k].received),borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.08)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#22c55e',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:cf,usePointStyle:true,pointStyle:'circle',padding:20}}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:cf}},y:{grid:{color:gc},ticks:{color:tc,font:cf}}}}});
+
   const sc={good:0,low:0,critical:0};products.forEach(p=>{const s=pSt(p);if(s.cls==='s-g')sc.good++;else if(s.cls==='s-l')sc.low++;else sc.critical++;});
   charts.st=new Chart(document.getElementById('ch-st'),{type:'doughnut',data:{labels:['In Stock','Low Stock','Critical'],datasets:[{data:[sc.good,sc.low,sc.critical],backgroundColor:['#22c55e','#f59e0b','#ef4444'],borderWidth:0,spacing:3,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{position:'bottom',labels:{color:tc,font:cf,usePointStyle:true,pointStyle:'circle',padding:16}}}}});
   const cats={};products.forEach(p=>{cats[p.category]=(cats[p.category]||0)+p.quantity;});const cl=Object.keys(cats);const cc=['#f59e0b','#14b8a6','#ef4444','#8b5cf6','#22c55e','#06b6d4'];
@@ -366,7 +412,7 @@ function delProd(id){const p=products.find(x=>x.id===id);openMod(`<div class="mh
 function rPO(){const sts=['all','Pending','Approved','Shipped','Delivered','Cancelled'];document.getElementById('po-fil').innerHTML=sts.map(s=>`<button class="fpil ${poF===s?'active':''}" onclick="poF='${s}';rPO()">${s==='all'?'All':s}</button>`).join('');let f=[...purchaseOrders];if(poF!=='all')f=f.filter(po=>po.status===poF);f.sort((a,b)=>b.id-a.id);document.getElementById('po-tb').innerHTML=f.map(po=>{const is=po.items.map(i=>`${i.product} (${i.qty})`).join(', ');return`<tr><td><span class="ponum">${po.poNumber}</span></td><td>${po.supplier}</td><td style="font-size:12px;color:var(--tx2);max-width:180px;" title="${is}">${is.length>30?is.substring(0,30)+'...':is}</td><td style="font-family:'Space Grotesk';font-weight:600;">${fmtC(po.totalAmount)}</td><td style="font-size:12px;color:var(--tx2);">${po.date}</td><td style="font-size:12px;color:var(--tx2);">${po.expectedDelivery}</td><td><span class="sb2 s-${po.status==='Approved'?'a':po.status==='Shipped'?'sh':po.status==='Delivered'?'d':po.status==='Cancelled'?'x':'p'}">${po.status}</span></td><td><button class="ab" onclick="viewPO(${po.id})"><i class="fas fa-eye"></i></button>${po.status==='Pending'?`<button class="ab" onclick="purchaseOrders.find(x=>x.id===${po.id}).status='Approved';rPO();autoSync('PurchaseOrders');showToast('Approved','success');"><i class="fas fa-check"></i></button>`:''}</td></tr>`;}).join('');if(!f.length)document.getElementById('po-tb').innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--tx3);">No orders found</td></tr>';}
 function openPOMod(){const lp=products.filter(p=>aSev(p));openMod(`<div class="mh"><h2>Create Purchase Order</h2><button class="mx" onclick="clMod()"><i class="fas fa-times"></i></button></div><div class="mb"><div class="fg"><label>Supplier</label><select id="po-s"><option value="">Select...</option>${suppliers.filter(s=>s.status==='Active').map(s=>`<option value="${s.name}">${s.name}</option>`).join('')}</select></div><div class="fg"><label>Product</label><select id="po-p" onchange="updPE()"><option value="">Select...</option>${lp.map(p=>`<option value="${p.id}" data-price="${p.unitPrice}">${p.name} (Stock: ${p.quantity})</option>`).join('')}${products.filter(p=>!aSev(p)).map(p=>`<option value="${p.id}" data-price="${p.unitPrice}">${p.name} (Stock: ${p.quantity})</option>`).join('')}</select></div><div class="fr"><div class="fg"><label>Quantity</label><input type="number" id="po-q" value="1" min="1" onchange="updPE()"></div><div class="fg"><label>Unit Price (₹)</label><input type="number" id="po-pr" value="0" readonly style="opacity:.7;"></div></div><div class="fr"><div class="fg"><label>Order Date</label><input type="date" id="po-dt" value="${new Date().toISOString().slice(0,10)}"></div><div class="fg"><label>Expected Delivery</label><input type="date" id="po-dl"></div></div><div style="padding:14px;background:var(--s3);border-radius:8px;margin-top:8px;"><div style="display:flex;justify-content:space-between;font-size:13px;color:var(--tx2);"><span>Estimated Total</span><span id="po-tot" style="font-family:'Space Grotesk';font-weight:700;color:var(--acc);font-size:16px;">₹0</span></div></div></div><div class="mf"><button class="btn btn-s" onclick="clMod()">Cancel</button><button class="btn btn-p" onclick="savePO()">Create PO</button></div>`);}
 function updPE(){const sel=document.getElementById('po-p');const opt=sel.options[sel.selectedIndex];const pr=opt?parseInt(opt.dataset.price)||0:0;const q=parseInt(document.getElementById('po-q').value)||0;document.getElementById('po-pr').value=pr;document.getElementById('po-tot').textContent=fmtC(pr*q);}
-function savePO(){const sup=document.getElementById('po-s').value,pid=parseInt(document.getElementById('po-p').value),q=parseInt(document.getElementById('po-q').value)||0,dt=document.getElementById('po-dt').value,dl=document.getElementById('po-dl').value;if(!sup||!pid||q<=0){showToast('Fill required fields','error');return;}const prd=products.find(p=>p.id===pid);const pn=`PO-2025-${String(nPOID).padStart(3,'0')}`;purchaseOrders.push({id:nPOID++,poNumber:pn,supplier:sup,items:[{product:prd.name,qty:q,price:prd.unitPrice}],totalAmount:prd.unitPrice*q,status:'Pending',date:dt,expectedDelivery:dl||'TBD'});clMod();rPO();updateBadges();showToast(`PO ${pn} created`,'success');autoSync('PurchaseOrders');setTimeout(()=>showToast(`Email sent to ${sup}`,'info'),800);}
+function savePO(){const sup=document.getElementById('po-s').value,pid=parseInt(document.getElementById('po-p').value),q=parseInt(document.getElementById('po-q').value)||0,dt=document.getElementById('po-dt').value,dl=document.getElementById('po-dl').value;if(!sup||!pid||q<=0){showToast('Fill required fields','error');return;}const prd=products.find(p=>p.id===pid);const pn=`PO-${new Date().getFullYear()}-${String(nPOID).padStart(3,'0')}`;purchaseOrders.push({id:nPOID++,poNumber:pn,supplier:sup,items:[{product:prd.name,qty:q,price:prd.unitPrice}],totalAmount:prd.unitPrice*q,status:'Pending',date:dt,expectedDelivery:dl||'TBD'});clMod();rPO();updateBadges();initDateRange();showToast(`PO ${pn} created`,'success');autoSync('PurchaseOrders');setTimeout(()=>showToast(`Email sent to ${sup}`,'info'),800);}
 function viewPO(id){const po=purchaseOrders.find(x=>x.id===id);const ih=po.items.map(i=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--brd);font-size:13px;"><span>${i.product} x ${i.qty}</span><span style="font-family:'Space Grotesk';font-weight:600;">${fmtC(i.price*i.qty)}</span></div>`).join('');openMod(`<div class="mh"><h2>${po.poNumber}</h2><button class="mx" onclick="clMod()"><i class="fas fa-times"></i></button></div><div class="mb"><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;"><div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px;">Supplier</div><div style="font-weight:600;">${po.supplier}</div></div><div><div style="font-size:11px;color:var(--tx3);margin-bottom:4px;">Status</div><span class="sb2 s-${po.status==='Approved'?'a':po.status==='Shipped'?'sh':po.status==='Delivered'?'d':po.status==='Cancelled'?'x':'p'}">${po.status}</span></div></div>${ih}<div style="display:flex;justify-content:space-between;padding:12px 0;font-size:15px;font-weight:700;"><span>Total</span><span style="color:var(--acc);font-family:'Space Grotesk';">${fmtC(po.totalAmount)}</span></div></div><div class="mf"><button class="btn btn-s" onclick="clMod()">Close</button></div>`);}
 
 // ==================== SUPPLIERS ====================
@@ -377,7 +423,7 @@ function saveSup(){const nm=document.getElementById('fs-nm').value.trim(),ct=doc
 // ==================== ALERTS ====================
 function rAl(){document.querySelectorAll('#al-fil .fpil').forEach(p=>p.classList.toggle('active',p.dataset.filter===alF));let f=[...alerts];if(alF!=='all')f=f.filter(a=>a.severity===alF||(alF==='resolved'&&a.status==='resolved'));if(alF==='all')f=f.sort((a,b)=>(a.severity==='critical'?0:1)-(b.severity==='critical'?0:1));const l=document.getElementById('al-list');if(!f.length){l.innerHTML='<div style="text-align:center;padding:60px;color:var(--tx3);"><i class="fas fa-check-circle" style="font-size:32px;margin-bottom:12px;color:var(--ok);display:block;"></i>No alerts found</div>';return;}l.innerHTML=f.map(a=>`<div class="acard ${a.severity}" style="${a.status==='resolved'?'opacity:.5;':''}"><div class="aicon" style="background:${a.severity==='critical'?'rgba(239,68,68,.12)':'rgba(245,158,11,.12)'};color:${a.severity==='critical'?'var(--err)':'var(--wrn)'};"><i class="fas fa-${a.severity==='critical'?'exclamation-triangle':'exclamation-circle'}"></i></div><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span style="font-weight:600;font-size:14px;">${a.productName}</span><span class="sb2 ${a.severity==='critical'?'s-c':'s-l'}">${a.severity.toUpperCase()}</span>${a.status==='resolved'?'<span class="sb2 s-d">RESOLVED</span>':''}</div><div style="font-size:12px;color:var(--tx3);margin-top:4px;">SKU: ${a.sku} · Stock: <strong style="color:${a.severity==='critical'?'var(--err)':'var(--wrn)'}">${a.currentStock}</strong> / Reorder: ${a.reorderLevel} · ${a.supplier}</div></div><div style="display:flex;gap:6px;flex-shrink:0;">${a.status==='open'?`<button class="btn btn-sm btn-s" onclick="poFromA(${a.id})"><i class="fas fa-file-invoice"></i> PO</button><button class="btn btn-sm btn-g" onclick="sendEm(${a.id})"><i class="fas fa-envelope"></i></button><button class="btn btn-sm btn-g" onclick="resA(${a.id})"><i class="fas fa-check"></i></button>`:''}</div></div>`).join('');}
 document.querySelectorAll('#al-fil .fpil').forEach(p=>{p.addEventListener('click',()=>{alF=p.dataset.filter;rAl();});});
-function poFromA(aid){const a=alerts.find(x=>x.id===aid);const p=products.find(x=>x.id===aid);if(!p)return;const need=p.reorderLevel*2-p.quantity;const pn=`PO-2025-${String(nPOID).padStart(3,'0')}`;purchaseOrders.push({id:nPOID++,poNumber:pn,supplier:a.supplier,items:[{product:p.name,qty:Math.max(need,10),price:p.unitPrice}],totalAmount:p.unitPrice*Math.max(need,10),status:'Pending',date:new Date().toISOString().slice(0,10),expectedDelivery:new Date(Date.now()+864e5*10).toISOString().slice(0,10)});showToast(`PO ${pn} created`,'success');autoSync('PurchaseOrders');setTimeout(()=>showToast(`Email sent to ${a.supplier}`,'info'),800);}
+function poFromA(aid){const a=alerts.find(x=>x.id===aid);const p=products.find(x=>x.id===aid);if(!p)return;const need=p.reorderLevel*2-p.quantity;const pn=`PO-${new Date().getFullYear()}-${String(nPOID).padStart(3,'0')}`;purchaseOrders.push({id:nPOID++,poNumber:pn,supplier:a.supplier,items:[{product:p.name,qty:Math.max(need,10),price:p.unitPrice}],totalAmount:p.unitPrice*Math.max(need,10),status:'Pending',date:new Date().toISOString().slice(0,10),expectedDelivery:new Date(Date.now()+864e5*10).toISOString().slice(0,10)});showToast(`PO ${pn} created`,'success');autoSync('PurchaseOrders');setTimeout(()=>showToast(`Email sent to ${a.supplier}`,'info'),800);}
 function sendEm(aid){const a=alerts.find(x=>x.id===aid);showToast(`Notification sent to ${a.supplier}`,'info');}
 function resA(aid){alerts.find(x=>x.id===aid).status='resolved';updateBadges();rAl();showToast('Resolved','success');autoSync('Alerts');}
 function sendAll(){const o=alerts.filter(a=>a.status==='open');if(!o.length){showToast('No open alerts','info');return;}showToast(`Emails sent to ${[...new Set(o.map(a=>a.supplier))].length} supplier(s)`,'success');}
@@ -387,56 +433,65 @@ function rUsr(){const s=document.getElementById('usr-s').value.toLowerCase(),rf=
 function grantR(uid){const sel=document.getElementById('rs-'+uid);const nr=sel.value;const u=users.find(x=>x.id===uid);if(!u||u.role===nr)return;u.role=nr;rUsr();showToast(`${u.name}: ${nr}`,'success');autoSync('Users');}
 function rmU(uid){const u=users.find(x=>x.id===uid);openMod(`<div class="mh"><h2>Remove ${u.name}?</h2><button class="mx" onclick="clMod()"><i class="fas fa-times"></i></button></div><div class="mb" style="text-align:center;padding:20px;"><p style="color:var(--tx2);">${u.email} will lose access.</p></div><div class="mf"><button class="btn btn-s" onclick="clMod()">Cancel</button><button class="btn btn-d" onclick="users=users.filter(x=>x.id!==${uid});clMod();rUsr();showToast('Removed','success');autoSync('Users');">Remove</button></div>`);}
 function openAddUserMod(){openMod(`<div class="mh"><h2>Add User</h2><button class="mx" onclick="clMod()"><i class="fas fa-times"></i></button></div><div class="mb"><div class="fg"><label>Email</label><input type="email" id="fu-em"></div><div class="fg"><label>Full Name</label><input type="text" id="fu-nm"></div><div class="fg"><label>Role</label><select id="fu-rl"><option value="USER">User</option><option value="ADMIN">Admin</option><option value="VIEWER">Viewer</option></select></div></div><div class="mf"><button class="btn btn-s" onclick="clMod()">Cancel</button><button class="btn btn-p" onclick="addU()">Add</button></div>`);}
-function addU(){const em=document.getElementById('fu-em').value.trim(),nm=document.getElementById('fu-nm').value.trim(),rl=document.getElementById('fu-rl').value;if(!em||!nm){showToast('Email and name required','error');return;}if(users.find(u=>u.email.toLowerCase()===em.toLowerCase())){showToast('Email exists','error');return;}users.push({id:nUID++,email:em,name:nm,role:rl,addedOn:new Date().toISOString().slice(0,10),lastLogin:'Never'});clMod();rUsr();showToast(`${nm} added as ${rl}`,'success');autoSync('Users');}
+function addU(){const em=document.getElementById('fu-em').value.trim(),nm=document.getElementById('fu-nm').value.trim(),rl=document.getElementById('fu-rl').value;if(!em||!nm){showToast('Email and name required','error');return;}if(users.find(u=>u.email.toLowerCase()===em.toLowerCase())){showToast('Email exists','error');return;}users.push({id:nUID++,email:em,name:nm,role:rl,addedOn:new Date().toISOString().slice(0,10),lastLogin:'Never'});clMod();rUsr();showToast(`${nm} added as ${rl}`,'success');autoSync('Users');setTimeout(()=>showToast(`Invitation sent to ${em}`,'info'),600);}
 
-// ==================== ANALYTICS (FIXED - DATA COUNTS) ====================
-function onAF(){const mv=document.getElementById('an-m').value;if(mv!=='all'){const[y,m]=mv.split('-').map(Number);const ld=new Date(y,m,0).getDate();document.getElementById('an-s').value=`${y}-${String(m).padStart(2,'0')}-01`;document.getElementById('an-e').value=`${y}-${String(m).padStart(2,'0')}-${ld}`;}rAn();}
-function resetAF(){document.getElementById('an-m').value='all';document.getElementById('an-s').value='2024-02-01';document.getElementById('an-e').value='2025-01-31';rAn();showToast('Reset','info');}
-function getFM(){const ss=document.getElementById('an-s').value,es=document.getElementById('an-e').value;const s=new Date(ss),e=new Date(es);const f={};Object.keys(monthlyData).forEach(k=>{const[y,m]=k.split('-').map(Number);const d=new Date(y,m-1,15);if(d>=s&&d<=e)f[k]=monthlyData[k];});return f;}
+// ==================== ANALYTICS (100% DATA-DRIVEN) ====================
+function onAF(){const mv=document.getElementById('an-m').value;if(mv!=='all'){document.getElementById('an-s').value=mv+'-01';const[y,m]=mv.split('-').map(Number);const ld=new Date(y,m,0).getDate();document.getElementById('an-e').value=`${y}-${String(m).padStart(2,'0')}-${ld}`;}rAn();}
+function resetAF(){document.getElementById('an-m').value='all';initDateRange();rAn();showToast('Range reset','info');}
 
 function rAn(){rAnCharts();}
 
 function rAnCharts(){
-  const fm=getFM();const mk=Object.keys(fm).sort();
-  const ti=mk.reduce((s,k)=>s+fm[k].inbound,0);
-  const to=mk.reduce((s,k)=>s+fm[k].outbound,0);
-  const totalSpend=mk.reduce((s,k)=>s+fm[k].spend,0);
-  const totalInvValue=products.reduce((s,p)=>s+p.quantity*p.unitPrice,0);
+  // Get ALL PO data grouped by month - NO hardcoded data
+  const allMonths = getPOByMonth();
+  const sortedKeys = Object.keys(allMonths).sort();
 
-  // FIXED: Correct turnover = Spend / Inventory Value
-  const turnover=totalInvValue>0?(totalSpend/totalInvValue).toFixed(1):'0.0';
+  // Apply date range filter for KPIs
+  const startStr = document.getElementById('an-s').value;
+  const endStr = document.getElementById('an-e').value;
+  const filteredPOs = getFilteredPOs(startStr, endStr);
 
-  document.getElementById('an-in').textContent=ti.toLocaleString();
-  document.getElementById('an-out').textContent=to.toLocaleString();
-  document.getElementById('an-to').textContent=turnover+'x';
+  // Compute KPIs ONLY from actual PO data in the selected period
+  let unitsReceived = 0, unitsOrdered = 0, totalSpend = 0;
+  filteredPOs.forEach(po => {
+    totalSpend += po.totalAmount || 0;
+    po.items.forEach(item => {
+      unitsOrdered += item.qty || 0;
+      if(po.status === 'Delivered') unitsReceived += item.qty || 0;
+    });
+  });
+
+  const totalInvValue = products.reduce((s,p) => s + p.quantity * p.unitPrice, 0);
+  const turnover = totalInvValue > 0 ? (totalSpend / totalInvValue).toFixed(1) : '0.0';
+
+  document.getElementById('an-in').textContent = unitsReceived.toLocaleString();
+  document.getElementById('an-out').textContent = unitsOrdered.toLocaleString();
+  document.getElementById('an-to').textContent = turnover + 'x';
 
   // Destroy old analytics charts
-  ['sp','sperf','cv','tv'].forEach(k=>{if(charts[k])charts[k].destroy();});
+  ['sp','sperf','cv','tv'].forEach(k => { if(charts[k]) charts[k].destroy(); });
+  const cf = {family:'DM Sans'}, gc = 'rgba(36,51,82,.5)', tc = '#5a6b80';
 
-  const cf={family:'DM Sans'},gc='rgba(36,51,82,.5)',tc='#5a6b80';
-
-  // ========== DATA SUMMARY COUNT CARDS ==========
+  // ========== COUNT CARDS - from actual data ==========
   const totalProducts = products.length;
-  const totalQty = products.reduce((s,p)=>s+p.quantity,0);
-  const inStock = products.filter(p=>!aSev(p)).length;
-  const lowStock = products.filter(p=>{const sev=aSev(p);return sev==='warning';}).length;
-  const critical = products.filter(p=>{const sev=aSev(p);return sev==='critical';}).length;
+  const totalQty = products.reduce((s, p) => s + p.quantity, 0);
+  const inStock = products.filter(p => !aSev(p)).length;
+  const lowStock = products.filter(p => { const sev = aSev(p); return sev === 'warning'; }).length;
+  const critical = products.filter(p => { const sev = aSev(p); return sev === 'critical'; }).length;
   const totalPOs = purchaseOrders.length;
-  const pendingPOs = purchaseOrders.filter(po=>po.status==='Pending').length;
-  const totalSuppliers = suppliers.length;
-  const activeSuppliers = suppliers.filter(s=>s.status==='Active').length;
+  const pendingPOs = purchaseOrders.filter(po => po.status === 'Pending').length;
+  const activeSuppliers = suppliers.filter(s => s.status === 'Active').length;
   const totalUsers = users.length;
-  const openAlerts = alerts.filter(a=>a.status==='open').length;
+  const openAlerts = alerts.filter(a => a.status === 'open').length;
 
   const countData = [
-    { label:'Total Products', value:totalProducts, icon:'fa-boxes-stacked', color:'#f59e0b', bg:'rgba(245,158,11,.12)' },
-    { label:'Total Stock Qty', value:totalQty.toLocaleString(), icon:'fa-cubes', color:'#14b8a6', bg:'rgba(20,184,166,.12)' },
-    { label:'In Stock', value:inStock, icon:'fa-circle-check', color:'#22c55e', bg:'rgba(34,197,94,.12)' },
-    { label:'Low Stock', value:lowStock, icon:'fa-exclamation-circle', color:'#f59e0b', bg:'rgba(245,158,11,.12)' },
-    { label:'Critical', value:critical, icon:'fa-triangle-exclamation', color:'#ef4444', bg:'rgba(239,68,68,.12)' },
-    { label:'Open Alerts', value:openAlerts, icon:'fa-bell', color:'#ef4444', bg:'rgba(239,68,68,.12)' },
+    { label: 'Total Products', value: totalProducts, icon: 'fa-boxes-stacked', color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
+    { label: 'Total Stock Qty', value: totalQty.toLocaleString(), icon: 'fa-cubes', color: '#14b8a6', bg: 'rgba(20,184,166,.12)' },
+    { label: 'In Stock', value: inStock, icon: 'fa-circle-check', color: '#22c55e', bg: 'rgba(34,197,94,.12)' },
+    { label: 'Low Stock', value: lowStock, icon: 'fa-exclamation-circle', color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
+    { label: 'Critical', value: critical, icon: 'fa-triangle-exclamation', color: '#ef4444', bg: 'rgba(239,68,68,.12)' },
+    { label: 'Open Alerts', value: openAlerts, icon: 'fa-bell', color: '#ef4444', bg: 'rgba(239,68,68,.12)' },
   ];
-
   document.getElementById('an-count-cards').innerHTML = countData.map(d => `
     <div style="background:var(--s2);border:1px solid var(--brd);border-radius:10px;padding:16px;text-align:center;transition:all .2s;">
       <div style="width:36px;height:36px;border-radius:8px;background:${d.bg};color:${d.color};display:flex;align-items:center;justify-content:center;font-size:15px;margin:0 auto 10px;"><i class="fas ${d.icon}"></i></div>
@@ -445,49 +500,83 @@ function rAnCharts(){
     </div>
   `).join('');
 
-  // Monthly Procurement Spend
-  const ak=Object.keys(monthlyData).sort();
-  const al=ak.map(k=>{const[y,m]=k.split('-');const n=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return n[parseInt(m)-1]+' '+y.slice(2);});
-  const sc=ak.map(k=>fm[k]?'rgba(245,158,11,.8)':'rgba(245,158,11,.15)');
-  const sbc=ak.map(k=>fm[k]?'#f59e0b':'rgba(245,158,11,.25)');
-  charts.sp=new Chart(document.getElementById('ch-sp'),{type:'bar',data:{labels:al,datasets:[{label:'Spend',data:ak.map(k=>monthlyData[k].spend),backgroundColor:sc,borderColor:sbc,borderWidth:1,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtC(c.raw)}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{...cf,size:10},maxRotation:45}},y:{grid:{color:gc},ticks:{color:tc,font:cf,callback:v=>'₹'+(v/1000)+'k'}}}}});
+  // ========== SPEND CHART - from actual PO data ==========
+  const albl = sortedKeys.map(getMonthLabel);
+  const spendData = sortedKeys.map(k => allMonths[k].spend);
+  const spendColors = sortedKeys.map(k => {
+    const startStr = document.getElementById('an-s').value;
+    const endStr = document.getElementById('an-e').value;
+    const inRange = (startStr && endStr) ? (k >= startStr && k <= endStr) : true;
+    return inRange ? 'rgba(245,158,11,0.8)' : 'rgba(245,158,11,0.15)';
+  });
+  const spendBorders = sortedKeys.map(k => {
+    const inRange = (startStr && endStr) ? (k >= startStr && k <= endStr) : true;
+    return inRange ? '#f59e0b' : 'rgba(245,158,11,0.25)';
+  });
 
-  // Supplier Performance
-  const as=suppliers.filter(s=>s.totalOrders>0).sort((a,b)=>b.totalOrders-a.totalOrders);
-  charts.sperf=new Chart(document.getElementById('ch-sperf'),{type:'bar',data:{labels:as.map(s=>s.name.length>16?s.name.substring(0,14)+'...':s.name),datasets:[{label:'Orders',data:as.map(s=>s.totalOrders),backgroundColor:'rgba(245,158,11,.7)',borderRadius:4,borderSkipped:false},{label:'On-Time %',data:as.map(s=>s.onTimeDelivery),backgroundColor:'rgba(34,197,94,.5)',borderRadius:4,borderSkipped:false,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:cf,usePointStyle:true,pointStyle:'circle',padding:16}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{...cf,size:10}}},y:{grid:{color:gc},ticks:{color:tc,font:cf},position:'left'},y1:{grid:{display:false},ticks:{color:tc,font:cf,callback:v=>v+'%'},position:'right',min:0,max:100}}}});
+  document.getElementById('an-spend-cnt').textContent = `${sortedKeys.length} month(s) with PO data`;
+  charts.sp = new Chart(document.getElementById('ch-sp'), {
+    type: 'bar',
+    data: { labels: albl, datasets: [{ label:'Spend', data: spendData, backgroundColor: spendColors, borderColor: spendBorders, borderWidth:1, borderRadius:6, borderSkipped: false }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmtC(c.raw) } } },
+      scales: { x: { grid: { display: false }, ticks: { color: tc, font: { ...cf, size: 10 }, maxRotation: 45 } }, y: { grid: { color: gc }, ticks: { color: tc, font: cf, callback: v => '₹' + (v / 1000) + 'k' } } }
+  });
 
-  // ---- ALL PRODUCTS STOCK TABLE ----
-  const sorted=[...products].sort((a,b)=>b.quantity*b.unitPrice-a.quantity*a.unitPrice);
-  document.getElementById('an-stock-cnt').textContent=`${sorted.length} products`;
-  const maxQty=Math.max(...products.map(p=>p.quantity),1);
-  document.getElementById('an-stock-tb').innerHTML=sorted.map(p=>{
-    const st=pSt(p);const val=p.quantity*p.unitPrice;
-    const pct=Math.min(100,Math.round((p.quantity/maxQty)*100));
-    const barColor=st.cls==='s-c'?'var(--err)':st.cls==='s-l'?'var(--wrn)':'var(--ok)';
-    const txtColor=st.cls==='s-c'?'var(--err)':st.cls==='s-l'?'var(--wrn)':'var(--ok)';
-    return`<tr><td><div style="font-weight:600;">${p.name}</div><div style="font-size:11px;color:var(--tx3);">${p.sku}</div></td><td style="font-size:12px;color:var(--tx2);">${p.category}</td><td style="font-family:'Space Grotesk';font-weight:600;color:${txtColor};">${p.quantity}</td><td><div class="spb"><div class="spb-track"><div class="spb-fill" style="width:${pct}%;background:${barColor};"></div></div><div class="spb-label" style="color:${txtColor};">${pct}%</div></div></td><td style="color:var(--tx2);">${p.reorderLevel}</td><td style="font-family:'Space Grotesk';">${fmtC(p.unitPrice)}</td><td style="font-family:'Space Grotesk';font-weight:600;">${fmtC(val)}</td><td><span class="sb2 ${st.cls}">${st.label}</span></td></tr>`;
-  }).join('');
+  // Supplier Performance - from actual supplier data
+  const as = suppliers.filter(s => s.totalOrders > 0).sort((a, b) => b.totalOrders - a.totalOrders);
+  charts.sperf = new Chart(document.getElementById('ch-sperf'), {
+    type: 'bar',
+    data: {
+      labels: as.map(s => s.name.length > 16 ? s.name.substring(0, 14) + '...' : s.name),
+      datasets: [
+        { label: 'Orders', data: as.map(s => s.totalOrders), backgroundColor: 'rgba(245,158,11,.7)', borderRadius: 4, borderSkipped: false },
+        { label: 'On-Time %', data: as.map(s => s.onTimeDelivery), backgroundColor: 'rgba(34,197,94,.5)', borderRadius: 4, borderSkipped: false, yAxisID: 'y1' }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: tc, font: cf, usePointStyle: true, pointStyle: 'circle', padding: 16 } } },
+      scales: { x: { grid: { display: false }, ticks: { color: tc, font: { ...cf, size: 10 } } }, y: { grid: { color: gc }, ticks: { color: tc, font: cf }, position: 'left' }, y1: { grid: { display: false }, ticks: { color: tc, font: cf, callback: v => v + '%' }, position: 'right', min: 0, max: 100 } } }
+  });
 
-  // Category-Wise Inventory Value
-  const cv={};products.forEach(p=>{cv[p.category]=(cv[p.category]||0)+p.quantity*p.unitPrice;});
-  const ccl=['#f59e0b','#14b8a6','#ef4444','#8b5cf6','#22c55e','#06b6d4'];
-  charts.cv=new Chart(document.getElementById('ch-cv'),{type:'bar',data:{labels:Object.keys(cv),datasets:[{data:Object.values(cv),backgroundColor:ccl.slice(0,Object.keys(cv).length),borderRadius:8,borderSkipped:false,barThickness:48}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtC(c.raw)}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:cf}},y:{grid:{color:gc},ticks:{color:tc,font:cf,callback:v=>'₹'+(v/1000)+'k'}}}}});
+  // Category-Wise Inventory Value - from actual products
+  const cv = {};
+  products.forEach(p => { cv[p.category] = (cv[p.category] || 0) + p.quantity * p.unitPrice; });
+  const ccl = ['#f59e0b', '#14b8a6', '#ef4444', '#8b5cf6', '#22c55e', '#06b6d4'];
+  charts.cv = new Chart(document.getElementById('ch-cv'), {
+    type: 'bar',
+    data: { labels: Object.keys(cv), datasets: [{ data: Object.values(cv), backgroundColor: ccl.slice(0, Object.keys(cv).length), borderRadius: 8, borderSkipped: false, barThickness: 48 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmtC(c.raw) } } },
+      scales: { x: { grid: { display: false }, ticks: { color: tc, font: cf } }, y: { grid: { color: gc }, ticks: { color: tc, font: cf, callback: v => '₹' + (v / 1000) + 'k' } } }
+  });
 
   // Top Products by Stock Value
-  const tv=[...products].sort((a,b)=>(b.quantity*b.unitPrice)-(a.quantity*a.unitPrice)).slice(0,10).reverse();
-  const tvColors=tv.map(p=>{const s=pSt(p);return s.cls==='s-c'?'#ef4444':s.cls==='s-l'?'#f59e0b':'#22c55e';});
-  charts.tv=new Chart(document.getElementById('ch-tv'),{type:'bar',data:{labels:tv.map(p=>p.name.length>22?p.name.substring(0,20)+'...':p.name),datasets:[{data:tv.map(p=>p.quantity*p.unitPrice),backgroundColor:tvColors,borderRadius:4,borderSkipped:false,barThickness:22}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtC(c.raw)}}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:cf,callback:v=>'₹'+(v/1000)+'k'}},y:{grid:{display:false},ticks:{color:tc,font:{...cf,size:11}}}}}});
+  const tv = [...products].sort((a, b) => (b.quantity * b.unitPrice) - (a.quantity * a.unitPrice)).slice(0, 10).reverse();
+  const tvColors = tv.map(p => { const s = pSt(p); return s.cls === 's-c' ? '#ef4444' : s.cls === 's-l' ? '#f59e0b' : '#22c55e'; });
+  charts.tv = new Chart(document.getElementById('ch-tv'), {
+    type: 'bar',
+    data: { labels: tv.map(p => p.name.length > 22 ? p.name.substring(0, 20) + '...' : p.name), datasets: [{ data: tv.map(p => p.quantity * p.unitPrice), backgroundColor: tvColors, borderRadius: 4, borderSkipped: false, barThickness: 22 }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmtC(c.raw) } } },
+      scales: { x: { grid: { color: gc }, ticks: { color: tc, font: cf, callback: v => '₹' + (v / 1000) + 'k' }, y: { grid: { display: false }, ticks: { color: tc, font: { ...cf, size: 11 } } } }
+  });
 }
 
 // ==================== SETTINGS ====================
-function togSS(h){h.classList.toggle('open');h.nextElementSibling.classList.toggle('open');}
-function exportCSV(){let csv='Name,SKU,Category,Quantity,ReorderLevel,UnitPrice,Supplier,Location\n';products.forEach(p=>{csv+=`"${p.name}","${p.sku}","${p.category}",${p.quantity},${p.reorderLevel},${p.unitPrice},"${p.supplier}","${p.location}"\n`;});const b=new Blob([csv],{type:'text/csv'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='inventory_'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(u);showToast('CSV exported','success');}
+function togSS(h) { h.classList.toggle('open'); h.nextElementSibling.classList.toggle('open'); }
+function exportCSV() { let csv = 'Name,SKU,Category,Quantity,ReorderLevel,UnitPrice,Supplier,Location\n'; products.forEach(p => { csv += `"${p.name}","${p.sku}","${p.category}",${p.quantity},${p.reorderLevel},${p.unitPrice},"${p.supplier}","${p.location}"\n`; }); const b = new Blob([csv], { type: 'text/csv' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'inventory_' + new Date().toISOString().slice(0, 10) + '.csv'; a.click(); URL.revokeObjectURL(u); showToast('CSV exported', 'success'); }
 
 // ==================== GLOBAL SEARCH ====================
-document.getElementById('gsearch').addEventListener('input',function(){const q=this.value.trim().toLowerCase();if(!q)return;const m=products.find(p=>p.name.toLowerCase().includes(q)||p.sku.toLowerCase().includes(q));if(m){nav('inventory');document.getElementById('inv-s').value=q;rInv();return;}const pm=purchaseOrders.find(po=>po.poNumber.toLowerCase().includes(q)||po.supplier.toLowerCase().includes(q));if(pm){nav('purchase-orders');return;}const sm=suppliers.find(s=>s.name.toLowerCase().includes(q)||s.contact.toLowerCase().includes(q));if(sm){nav('suppliers');return;}const um=users.find(u=>u.email.toLowerCase().includes(q)||u.name.toLowerCase().includes(q));if(um){nav('users');return;}});
+document.getElementById('gsearch').addEventListener('input', function(){const q = this.value.trim().toLowerCase(); if(!q) return; const m = products.find(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)); if(m) { nav('inventory'); document.getElementById('inv-s').value = q; rInv(); return; } const pm = purchaseOrders.find(po => po.poNumber.toLowerCase().includes(q) || po.supplier.toLowerCase().includes(q)); if(pm) { nav('purchase-orders'); return; } const sm = suppliers.find(s => s.name.toLowerCase().includes(q) || s.contact.toLowerCase().includes(q)); if(sm) { nav('suppliers'); return; } const um = users.find(u => u.email.toLowerCase().includes(q) || u.name.toLowerCase().includes(q)); if(um) { nav('users'); return; }});
 
 // ==================== INIT ====================
-function init(){genAlerts();updateBadges();rDash();const su=localStorage.getItem('gs_url');if(su){document.getElementById('gs-url').value=su;gsUrl=su;gsConnected=true;setSyncSt('connected');syncLog('Previous connection restored','info');}setTimeout(()=>document.getElementById('app-loader').classList.add('hidden'),600);}
+function init() {
+  genAlerts(); updateBadges(); rDash(); initDateRange(); rDashCharts();
+  const su = localStorage.getItem('gs_url');
+  if(su) { document.getElementById('gs-url').value = su; gsUrl = su; gsConnected = true; setSyncSt('connected'); syncLog('Previous connection restored', 'info'); }
+  setTimeout(() => document.getElementById('app-loader').classList.add('hidden'), 600);
+}
 init();
 </script>
 </body>
