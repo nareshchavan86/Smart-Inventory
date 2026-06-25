@@ -1731,7 +1731,6 @@
                         nPOID = Math.max(...purchaseOrders.map(p => p.id), 0) + 1;
                         syncLog(`Loaded ${purchaseOrders.length} PO(s) from Sheets`, 'success');
                     } else {
-                        // If the sheet exists but has no valid rows, clear the array
                         purchaseOrders = [];
                         syncLog('No valid purchase orders found in Sheets', 'warn');
                     }
@@ -1762,12 +1761,9 @@
                 }
                 updateBadges();
                 setSyncSt('connected');
-                // Store URL for re-use
                 localStorage.setItem('gs_url', url);
-                // Refresh everything
                 initDateRange();
                 nav(cView);
-                // Update analytics source badge
                 updateAnalyticsSourceBadge();
             } else {
                 gsConnected = false;
@@ -1789,8 +1785,6 @@
             syncLog('Disconnected from Google Sheets.', 'warn');
             showToast('Disconnected', 'info');
             updateAnalyticsSourceBadge();
-            // Reload demo data?
-            // We keep the current data but mark it as demo
             nav(cView);
         }
 
@@ -2051,7 +2045,6 @@
                 gc = 'rgba(36,51,82,.5)',
                 tc = '#5a6b80';
 
-            // PO activity – last 6 months (or all)
             const allMonths = getPOByMonth();
             const sortedKeys = Object.keys(allMonths).sort();
             const last6 = sortedKeys.slice(-6);
@@ -2612,6 +2605,38 @@
                                 font: { ...cf, size: 11 } } } }
                 }
             });
+
+            // ============================================================
+            //  NEW: Populate Product Stock Levels table
+            // ============================================================
+            const stockTbody = document.getElementById('an-stock-tb');
+            const stockCnt = document.getElementById('an-stock-cnt');
+            stockCnt.textContent = `${products.length} products`;
+            const sortedProducts = [...products].sort((a, b) => b.quantity - a.quantity);
+            stockTbody.innerHTML = sortedProducts.map(p => {
+                const st = pSt(p);
+                // calculate progress: what % of (reorderLevel * 2) is current stock?
+                const maxStock = Math.max(p.reorderLevel * 2, p.quantity);
+                const levelPct = Math.min((p.quantity / (p.reorderLevel * 2)) * 100, 100);
+                const levelColor = st.cls === 's-c' ? 'var(--err)' : st.cls === 's-l' ? 'var(--wrn)' : 'var(--ok)';
+                return `<tr>
+                        <td><strong>${p.name}</strong></td>
+                        <td>${p.category}</td>
+                        <td>${p.quantity}</td>
+                        <td>
+                            <div class="spb">
+                                <div class="spb-track">
+                                    <div class="spb-fill" style="width:${levelPct}%;background:${levelColor};"></div>
+                                </div>
+                                <span class="spb-label">${Math.round(levelPct)}%</span>
+                            </div>
+                        </td>
+                        <td>${p.reorderLevel}</td>
+                        <td>${fmtC(p.unitPrice)}</td>
+                        <td>${fmtC(p.quantity * p.unitPrice)}</td>
+                        <td><span class="sb2 ${st.cls}">${st.label}</span></td>
+                    </tr>`;
+            }).join('');
         }
 
         // ============================================================
@@ -2667,7 +2692,6 @@
             if (su) {
                 document.getElementById('gs-url').value = su;
                 gsUrl = su;
-                // Auto-connect with stored URL
                 setTimeout(() => {
                     connectGS();
                 }, 400);
